@@ -58,4 +58,4 @@ FRIEND_CHANNELS = {
 # === Водяные знаки (приписываются в конце каждого сообщения) ===
 # Поддерживается HTML: <b>жирный</b>, <i>курсив</i>, <a href="...">ссылка</a>
 MY_WATERMARK = "\n\n<b>@Dark_Answers</b> | Слил Dark Answers - https://t.me/+2CslS8cgCCVmY2Y1"
-FRIEND_WATERMARK = "Источник  ТГК @Edge_answers"
+FRIEND_WATERMARK = "\n\nИсточник  ТГК @Edge_answers"
