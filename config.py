@@ -58,5 +58,5 @@ MY_CHANNELS = {
 
 # === Водяные знаки (приписываются в конце каждого сообщения) ===
 # Поддерживается HTML: <b>жирный</b>, <i>курсив</i>, <a href="...">ссылка</a>
-MY_WATERMARK = " "
-FRIEND_WATERMARK = " "
+MY_WATERMARK = "1"
+FRIEND_WATERMARK = "2"
