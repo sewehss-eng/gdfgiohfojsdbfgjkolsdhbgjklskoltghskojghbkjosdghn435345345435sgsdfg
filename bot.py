@@ -2,14 +2,14 @@
 """
 Пост-бот для рассылки по каналам.
 
-Логика:
+Логика (новая):
   /start -> выбираешь предмет -> шлёшь сообщения (любой формат) ->
   жмёшь «Готово» -> бот рассылает:
-    • в ТВОЙ канал (MY_CHANNEL)        — ВСЕ сообщения (все предметы)
-    • в каналы друга (FRIEND_CHANNELS) — по предметам
+    • в ОБЩИЙ канал (AUTOPOST_CHANNEL)        — ВСЕ сообщения (все предметы)
+    • в твои каналы (MY_CHANNELS)             — по предметам
 
   В конце каждого сообщения добавляется водяной знак
-  (свой для твоего канала, свой для каналов друга).
+  (свой для общего канала, свой для предметных каналов).
 
 Только админы (config.ADMINS) могут пользоваться ботом.
 Рассылка по разным каналам идёт параллельно -> быстро.
@@ -472,16 +472,22 @@ async def broadcast(session) -> str:
     items = session["items"]
 
     # Раскладываем элементы по каналам, сохраняя порядок.
-    # Твой канал получает ВСЕ элементы; каналы друга — по предмету.
+    # Общий канал получает ВСЕ элементы; предметные каналы — по предмету.
     channel_items = defaultdict(list)
     channel_wm = {}
+
+    # Добавляем все элементы в автопост
     for it in items:
-        channel_items[config.MY_CHANNEL].append(it)
-        channel_wm[config.MY_CHANNEL] = config.MY_WATERMARK
-        ch = config.FRIEND_CHANNELS.get(it["subject"])
+        channel_items[config.AUTOPOST_CHANNEL].append(it)
+    channel_wm[config.AUTOPOST_CHANNEL] = config.AUTOPOST_WATERMARK
+
+    # Добавляем элементы в предметные каналы (если такой канал существует)
+    for it in items:
+        subject = it["subject"]
+        ch = config.MY_CHANNELS.get(subject)
         if ch:
             channel_items[ch].append(it)
-            channel_wm[ch] = config.FRIEND_WATERMARK
+            channel_wm[ch] = config.SUBJECT_WATERMARK
 
     # Каналы рассылаются параллельно, внутри канала — по порядку.
     tasks = [
@@ -501,7 +507,17 @@ async def broadcast(session) -> str:
         chat_id, ok, fail, sent_ids = r
         for mid in sent_ids:
             sent_all.append((chat_id, mid))
-        name = "Мой канал" if chat_id == config.MY_CHANNEL else str(chat_id)
+        # Определяем имя канала для отчёта
+        if chat_id == config.AUTOPOST_CHANNEL:
+            name = "Автопост"
+        else:
+            # пытаемся найти название предмета по каналу
+            found = None
+            for subj, ch in config.MY_CHANNELS.items():
+                if ch == chat_id:
+                    found = config.SUBJECTS.get(subj, subj)
+                    break
+            name = found if found else str(chat_id)
         status = f"✅ {ok}" + (f", ❌ {fail}" if fail else "")
         lines.append(f"• {name}: {status}")
     return "\n".join(lines), sent_all
@@ -544,7 +560,15 @@ async def delete_broadcast(record) -> str:
             lines.append(f"❌ {r}")
             continue
         chat_id, ok, fail = r
-        name = "Мой канал" if chat_id == config.MY_CHANNEL else str(chat_id)
+        if chat_id == config.AUTOPOST_CHANNEL:
+            name = "Автопост"
+        else:
+            found = None
+            for subj, ch in config.MY_CHANNELS.items():
+                if ch == chat_id:
+                    found = config.SUBJECTS.get(subj, subj)
+                    break
+            name = found if found else str(chat_id)
         status = f"🗑 {ok}" + (f", ❌ {fail}" if fail else "")
         lines.append(f"• {name}: {status}")
     return "\n".join(lines)
