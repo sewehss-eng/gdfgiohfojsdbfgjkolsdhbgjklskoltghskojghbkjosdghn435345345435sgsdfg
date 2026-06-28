@@ -13,7 +13,7 @@
 """
 
 # === Токен бота (получить у @BotFather) ===
-BOT_TOKEN = "8734541907:AAHIexIU4iLMSeJNZ60AiU58UZGFW81qfJs"
+BOT_TOKEN = "8824533487:AAGBcXmQki4ukiPZ7cLzdngr2zSBudCdRec"
 
 # === Кто может пользоваться ботом (числовые user_id) ===
 # Только эти люди смогут рассылать. Добавь себя и друга.
